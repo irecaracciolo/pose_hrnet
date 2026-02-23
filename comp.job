@@ -1,0 +1,26 @@
+#!/bin/bash
+#SBATCH --time=100:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --nodelist=baldur
+#SBATCH --partition=RTX
+#SBATCH --gres=gpu:1
+#SBATCH --job-name=comp
+#SBATCH --mem=32GB
+#SBATCH --output=%x_%j.log
+
+cd /nfs/home/caracciolo/pose_hrnet
+source .venv/bin/activate
+
+python -c "from src.config import assert_dataset_layout; assert_dataset_layout(); print('Dataset OK')"
+
+python -m src.compare_eval_subsets \
+  --a "/nfs/home/caracciolo/pose_hrnet/runs/2026-01-26_23-13-53_hrnet_hmOnly_weightedMSE_pw20/eval_epnp/lightbox_argmax/lightbox/per_sample.json" \
+  --b "/nfs/home/caracciolo/pose_hrnet/runs/2026-01-30_13-47-23_hrnet_hmOnly_weightedMSE_pw20/eval_epnp/lightbox_argmax/lightbox/per_sample.json" \
+  --c "/nfs/home/caracciolo/pose_hrnet/runs/2026-02-01_15-22-58_hrnet_hmCoord_weightedMSE_pw20_lambdaSched/eval_pnp/2026-02-01_15-22-58_hrnet_hmOnly_weightedMSE_pw20/eval_epnp/lightbox_argmax_epoch40/lightbox/per_sample.json" \
+  --name_a "HM-only" \
+  --name_b "Coord-fixed" \
+  --name_c "Coord-warmup" \
+  --out "/nfs/home/caracciolo/pose_hrnet/comparison/lightbox/" \
+  --penalty_q 0.90 \
+  --penalty_mult 3.0

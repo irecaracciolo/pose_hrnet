@@ -1,0 +1,24 @@
+# Virtual env
+.venv/
+
+# Training artifacts
+checkpoints/
+runs/
+logs/
+outputs/
+
+# comparison
+compare_hm_vs_hmcoord/
+comparison/
+
+# Log files
+*.log
+*.out
+*.err
+
+# # HPC job files
+# *.job
+
+# Python cache
+__pycache__/
+*.pyc

@@ -1,0 +1,28 @@
+#!/bin/bash
+#SBATCH --time=120:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --nodelist=baldur
+#SBATCH --partition=RTX
+#SBATCH --gres=gpu:1
+#SBATCH --job-name=spc_crop
+#SBATCH --mem=32GB
+#SBATCH --output=logs/%x_%j.log
+
+cd /nfs/home/caracciolo/pose_hrnet
+source .venv/bin/activate
+
+python -c "from src.config import assert_dataset_layout; assert_dataset_layout(); print('Dataset OK')"
+
+python -m src.train_hrnet_pose_aug_crop \
+  --run_tag hrnet_augStrong_coord \
+  --use_coord_loss 0 \
+  --lambda_coord 1.0 \
+  --beta_softarg 30 \
+  --use_aug 1 \
+  --aug_preset strong \
+  --aug_seed 0 \
+  --use_bbox_crop 1 \
+  --bbox_margin 0.15 \
+  --bbox_square 1 \
+  --bbox_min_size 64

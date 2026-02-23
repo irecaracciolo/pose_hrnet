@@ -1,0 +1,28 @@
+#!/bin/bash
+#SBATCH --time=100:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --nodelist=baldur
+#SBATCH --partition=RTX
+#SBATCH --gres=gpu:1
+#SBATCH --job-name=toff
+#SBATCH --mem=32GB
+#SBATCH --output=tradeoff_lightbox.log
+
+cd /nfs/home/caracciolo/pose_hrnet || exit 1
+source .venv/bin/activate
+
+python -c "from src.config import assert_dataset_layout; assert_dataset_layout(); print('Dataset OK')"
+
+python -m src.tradeoff_analysis \
+  --stage both \
+  --split validation --domain synthetic \
+  --ckpt /nfs/home/caracciolo/pose_hrnet/runs/2026-01-26_23-13-53_hrnet_hmOnly_weightedMSE_pw20/checkpoints/hrnet_kpts_best.pth \
+  --out_dir /nfs/home/caracciolo/pose_hrnet/runs/2026-01-26_23-13-53_hrnet_hmOnly_weightedMSE_pw20/tradeoff_val_new \
+  --img_size 256 256 \
+  --min_inliers_list "2,4,6,8,10" \
+  --rmse_inliers_thr_list "1,4,12,20,28" \
+  --min_kpt_area_list "10,1000,3000" \
+  --t_ratio_max_list "1,3,5" \
+  --select_mode ideal_point \
+  --min_accept_rate 0.25

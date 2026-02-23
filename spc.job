@@ -1,0 +1,24 @@
+#!/bin/bash
+#SBATCH --time=100:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --nodelist=baldur
+#SBATCH --partition=RTX
+#SBATCH --gres=gpu:1
+#SBATCH --job-name=spc
+#SBATCH --mem=32GB
+#SBATCH --output=logs/%x_%j.log
+
+cd /nfs/home/caracciolo/pose_hrnet
+source .venv/bin/activate
+
+python -c "from src.config import assert_dataset_layout; assert_dataset_layout(); print('Dataset OK')"
+
+python -m src.train_hrnet_pose \
+  --use_coord_loss 1 \
+  --lambda_coord_max 0.3 \
+  --lambda_warmup_epochs 5 \
+  --lambda_ramp_epochs 20 \
+  --beta_softarg 30 \
+  --use_coord_peak_gate 1 \
+  --coord_peak_thr 0.25
